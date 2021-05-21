@@ -1,5 +1,7 @@
 package spring5_webmvc_bean_validation_study.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -37,12 +39,16 @@ public class RegisterController {
 	}
 	
 	@PostMapping("/register/step3")
-	public String handleStep3(RegisterRequest regReq, Errors errors) {	// Errors 타입 파라미터는 반드시 커맨드 객체를 위한 파라미터 다음에 위치해야 함
+	public String handleStep3(@Valid RegisterRequest regReq, Errors errors) {	// Errors 타입 파라미터는 반드시 커맨드 객체를 위한 파라미터 다음에 위치해야 함
 		System.out.println(regReq);
-		
-		new RegisterRequestValidator().validate(regReq, errors);
+
 		if (errors.hasErrors())
 			return "register/step2";
+		
+		if (!regReq.isPasswordEqualToConfirmPassword()) {
+			errors.rejectValue("confirmPassword", "nomatch");
+			return "register/step2";
+		}
 		
 		try {
 			memberRegisterService.regist(regReq);
@@ -52,6 +58,4 @@ public class RegisterController {
 			return "register/step2";
 		}
 	}
-	
-	
 }
